@@ -26,6 +26,7 @@ import (
 	"log"
 	"os"
 	nsclient "quorate/internal/ns-client"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -58,8 +59,6 @@ type RegionDump struct {
 }
 
 func main() {
-	fmt.Println(Gpl)
-
 	if len(os.Args) < 2 {
 		log.Fatal("Please provide a proposal ID.")
 	}
@@ -73,9 +72,23 @@ func main() {
 	flagSet := flag.FlagSet{}
 	flagSet.IntVar(&maxEndoCount, "endos", 5, "The maximum endorsement count for a target")
 	flagSet.IntVar(&minimumTrigger, "min-trig", 6, "The minimum trigger time")
-	flagSet.BoolVar(&isMinor, "minor", false, "Set to true if generating times for minor")
+	flagSet.BoolVar(&isMinor, "minor", false, "Use if generating times for minor")
 
-	_ = flagSet.Parse(os.Args[2:])
+	if os.Args[1] == "-h" || os.Args[1] == "--help" {
+		var command string
+		if runtime.GOOS == "windows" {
+			command = ".\\quorate.exe proposal_id_12312312"
+		} else {
+			command = "./quorate proposal_id_12312312"
+		}
+		fmt.Println("Example:\n  " + command)
+		_ = flagSet.Parse(os.Args[1:])
+		return
+	} else {
+		_ = flagSet.Parse(os.Args[2:])
+	}
+
+	fmt.Println(Gpl)
 
 	scanner := bufio.NewScanner(os.Stdin)
 	fmt.Print("Enter your main nation: ")
