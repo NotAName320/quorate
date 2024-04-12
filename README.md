@@ -7,11 +7,11 @@ Licensed GPLv3.
 ## Usage
 On Linux:
 ```bash
-$ ./quorate proposal_id_12312312
+$ ./quorate
 ```
 On Windows:
 ```cmd
-> .\quorate.exe proposal_id_12312312
+> .\quorate.exe
 ```
 
 You can also run `./quorate -h` or `.\quorate.exe -h` for options.

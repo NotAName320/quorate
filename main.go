@@ -21,12 +21,12 @@ package main
 import (
 	"bufio"
 	"encoding/xml"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 	nsclient "quorate/internal/ns-client"
-	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -59,43 +59,46 @@ type RegionDump struct {
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		log.Fatal("Please provide a proposal ID.")
-	}
-
-	proposalId := os.Args[1]
-
 	var maxEndoCount int
 	var minimumTrigger int
 	var isMinor bool
+	var proposalId string
+	var userAgent string
 
 	flagSet := flag.FlagSet{}
 	flagSet.IntVar(&maxEndoCount, "endos", 5, "The maximum endorsement count for a target")
 	flagSet.IntVar(&minimumTrigger, "mintrig", 8, "The minimum trigger time")
 	flagSet.BoolVar(&isMinor, "minor", false, "Use if generating times for minor")
+	flagSet.StringVar(&proposalId, "proposal", "", "The proposal ID")
+	flagSet.StringVar(&userAgent, "useragent", "", "Your user agent")
 
-	if os.Args[1] == "-h" || os.Args[1] == "--help" {
-		var command string
-		if runtime.GOOS == "windows" {
-			command = ".\\quorate.exe proposal_id_12312312"
-		} else {
-			command = "./quorate proposal_id_12312312"
-		}
-		fmt.Println("Example:\n  " + command)
-		_ = flagSet.Parse(os.Args[1:])
+	err := flagSet.Parse(os.Args[1:])
+	if errors.Is(err, flag.ErrHelp) {
 		return
-	} else {
-		_ = flagSet.Parse(os.Args[2:])
+	} else if err != nil {
+		log.Fatal(err)
 	}
 
 	fmt.Println(Gpl)
 
 	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Print("Enter your main nation: ")
-	scanner.Scan()
-	nation := scanner.Text()
-	nsclient.SetUserAgent(nation)
-	log.Println("User agent set to " + nation)
+	for userAgent == "" {
+		fmt.Print("Enter your main nation: ")
+		scanner.Scan()
+		userAgent = scanner.Text()
+		time.Sleep(50 * time.Millisecond) //avoids weird behavior on ctrl C
+	}
+	nsclient.SetUserAgent(userAgent)
+	log.Println("User agent set to " + userAgent)
+	time.Sleep(500 * time.Millisecond)
+
+	for proposalId == "" {
+		fmt.Print("Enter a World Assembly Proposal ID (e.g. proposal_id_12312312): ")
+		scanner.Scan()
+		proposalId = scanner.Text()
+		time.Sleep(50 * time.Millisecond)
+	}
+	log.Println("Proposal set to " + proposalId)
 	time.Sleep(500 * time.Millisecond)
 
 	getNewDump := true
@@ -105,6 +108,7 @@ func main() {
 			fmt.Print("Daily regions dump already downloaded! Download again? (Y/n) ")
 			scanner.Scan()
 			choice = strings.ToLower(scanner.Text())
+			time.Sleep(50 * time.Millisecond)
 		}
 		if choice == "n" {
 			getNewDump = false
