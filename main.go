@@ -71,7 +71,7 @@ func main() {
 
 	flagSet := flag.FlagSet{}
 	flagSet.IntVar(&maxEndoCount, "endos", 5, "The maximum endorsement count for a target")
-	flagSet.IntVar(&minimumTrigger, "min-trig", 6, "The minimum trigger time")
+	flagSet.IntVar(&minimumTrigger, "mintrig", 8, "The minimum trigger time")
 	flagSet.BoolVar(&isMinor, "minor", false, "Use if generating times for minor")
 
 	if os.Args[1] == "-h" || os.Args[1] == "--help" {
