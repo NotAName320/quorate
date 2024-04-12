@@ -31,6 +31,12 @@ import (
 	"time"
 )
 
+const Gpl = `QUORATE v1.0.0, Copyright (C) 2024 Nota
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions. Check the LICENSE file for more info.
+`
+
 type Hit struct {
 	Name          string
 	Delegate      string
@@ -52,6 +58,8 @@ type RegionDump struct {
 }
 
 func main() {
+	fmt.Println(Gpl)
+
 	if len(os.Args) < 2 {
 		log.Fatal("Please provide a proposal ID.")
 	}
