@@ -33,7 +33,7 @@ import (
 	"time"
 )
 
-const Gpl = `QUORATE v1.0.3, Copyright (C) 2024 Nota
+const Gpl = `QUORATE v1.0.4, Copyright (C) 2024 Nota
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it
 under certain conditions. Check the LICENSE file for more info.
@@ -135,7 +135,7 @@ func main() {
 	if !flagPassed("minor", flagSet) {
 		var choice string
 		for choice != "major" && choice != "minor" {
-			fmt.Print("Daily regions dump already downloaded! Download again? (Y/n) ")
+			fmt.Print("Which update do you want to search for? (minor/major) ")
 			scanner.Scan()
 			choice = strings.ToLower(scanner.Text())
 			time.Sleep(50 * time.Millisecond)
