@@ -35,7 +35,7 @@ import (
 )
 
 const apiUrl = "https://www.nationstates.net/cgi-bin/api.cgi"
-const version = "1.0.1"
+const version = "1.0.3"
 
 var httpClient = http.DefaultClient
 var userAgent = ""

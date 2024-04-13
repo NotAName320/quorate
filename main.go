@@ -33,7 +33,7 @@ import (
 	"time"
 )
 
-const Gpl = `QUORATE v1.0.1, Copyright (C) 2024 Nota
+const Gpl = `QUORATE v1.0.3, Copyright (C) 2024 Nota
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it
 under certain conditions. Check the LICENSE file for more info.
@@ -59,10 +59,21 @@ type RegionDump struct {
 	LastMajor int64  `xml:"LASTMAJORUPDATE"`
 }
 
+func flagPassed(name string, set flag.FlagSet) bool {
+	found := false
+	set.Visit(func(f *flag.Flag) {
+		if f.Name == name {
+			found = true
+		}
+	})
+	return found
+}
+
 func main() {
 	var maxEndoCount int
 	var minimumTrigger int
 	var isMinor bool
+	var reDownDump bool
 	var proposalId string
 	var userAgent string
 
@@ -72,6 +83,7 @@ func main() {
 	flagSet.IntVar(&maxEndoCount, "endos", -1, "The maximum endorsement count for a target")
 	flagSet.IntVar(&minimumTrigger, "mintrig", -1, "The minimum trigger time")
 	flagSet.BoolVar(&isMinor, "minor", false, "Use if generating times for minor")
+	flagSet.BoolVar(&reDownDump, "redownload", false, "Use to redownload the daily dump if it's already present")
 
 	err := flagSet.Parse(os.Args[1:])
 	if errors.Is(err, flag.ErrHelp) {
@@ -120,17 +132,32 @@ func main() {
 	log.Printf("Minimum trigger set to %d!\n", minimumTrigger)
 	time.Sleep(500 * time.Millisecond)
 
-	getNewDump := true
-	if _, err := os.Stat("regions.xml"); err == nil {
-		choice := "qwerty"
-		for choice != "y" && choice != "n" && choice != "" {
+	if !flagPassed("minor", flagSet) {
+		var choice string
+		for choice != "major" && choice != "minor" {
 			fmt.Print("Daily regions dump already downloaded! Download again? (Y/n) ")
 			scanner.Scan()
 			choice = strings.ToLower(scanner.Text())
 			time.Sleep(50 * time.Millisecond)
 		}
-		if choice == "n" {
-			getNewDump = false
+		isMinor = choice == "minor"
+	}
+
+	getNewDump := true
+	if _, err := os.Stat("regions.xml"); err == nil {
+		if flagPassed("redownload", flagSet) {
+			getNewDump = reDownDump
+		} else {
+			choice := "qwerty"
+			for choice != "y" && choice != "n" && choice != "" {
+				fmt.Print("Daily regions dump already downloaded! Download again? (Y/n) ")
+				scanner.Scan()
+				choice = strings.ToLower(scanner.Text())
+				time.Sleep(50 * time.Millisecond)
+			}
+			if choice == "n" {
+				getNewDump = false
+			}
 		}
 	}
 	if getNewDump {
@@ -276,6 +303,10 @@ func main() {
 	var raidFileBuilder strings.Builder
 
 	for i, hit := range hittable {
+		if hit.TriggerRegion == "" {
+			continue
+		}
+
 		firstRegionTimeDiff := (time.Duration(hit.UpdateTime-firstUpdateTime) * time.Second).String()
 		triggerTimeDiff := time.Duration(hit.UpdateTime-hit.TriggerTime) * time.Second
 
