@@ -28,11 +28,12 @@ import (
 	"os"
 	nsclient "quorate/internal/ns-client"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
 
-const Gpl = `QUORATE v1.0.0, Copyright (C) 2024 Nota
+const Gpl = `QUORATE v1.0.1, Copyright (C) 2024 Nota
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it
 under certain conditions. Check the LICENSE file for more info.
@@ -66,11 +67,11 @@ func main() {
 	var userAgent string
 
 	flagSet := flag.FlagSet{}
-	flagSet.IntVar(&maxEndoCount, "endos", 5, "The maximum endorsement count for a target")
-	flagSet.IntVar(&minimumTrigger, "mintrig", 8, "The minimum trigger time")
-	flagSet.BoolVar(&isMinor, "minor", false, "Use if generating times for minor")
-	flagSet.StringVar(&proposalId, "proposal", "", "The proposal ID")
 	flagSet.StringVar(&userAgent, "useragent", "", "Your user agent")
+	flagSet.StringVar(&proposalId, "proposal", "", "The proposal ID")
+	flagSet.IntVar(&maxEndoCount, "endos", -1, "The maximum endorsement count for a target")
+	flagSet.IntVar(&minimumTrigger, "mintrig", -1, "The minimum trigger time")
+	flagSet.BoolVar(&isMinor, "minor", false, "Use if generating times for minor")
 
 	err := flagSet.Parse(os.Args[1:])
 	if errors.Is(err, flag.ErrHelp) {
@@ -100,6 +101,23 @@ func main() {
 	}
 	log.Println("Proposal set to " + proposalId)
 	time.Sleep(500 * time.Millisecond)
+
+	for endoCountString := ""; err != nil || maxEndoCount < 1; maxEndoCount, err = strconv.Atoi(endoCountString) {
+		fmt.Print("Enter the endo count: ")
+		scanner.Scan()
+		endoCountString = strings.ToLower(scanner.Text())
+		time.Sleep(50 * time.Millisecond)
+	}
+	log.Printf("Endo count set to %d\n", maxEndoCount)
+	time.Sleep(500 * time.Millisecond)
+
+	for minTrigString := ""; err != nil || minimumTrigger < 1; minimumTrigger, err = strconv.Atoi(minTrigString) {
+		fmt.Print("Enter the minimum trigger time: ")
+		scanner.Scan()
+		minTrigString = strings.ToLower(scanner.Text())
+		time.Sleep(50 * time.Millisecond)
+	}
+	log.Printf("Minimum trigger %d\n", minimumTrigger)
 
 	getNewDump := true
 	if _, err := os.Stat("regions.xml"); err == nil {
