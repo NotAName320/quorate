@@ -108,7 +108,7 @@ func main() {
 		endoCountString = strings.ToLower(scanner.Text())
 		time.Sleep(50 * time.Millisecond)
 	}
-	log.Printf("Endo count set to %d\n", maxEndoCount)
+	log.Printf("Endo count set to %d!\n", maxEndoCount)
 	time.Sleep(500 * time.Millisecond)
 
 	for minTrigString := ""; err != nil || minimumTrigger < 1; minimumTrigger, err = strconv.Atoi(minTrigString) {
@@ -117,7 +117,8 @@ func main() {
 		minTrigString = strings.ToLower(scanner.Text())
 		time.Sleep(50 * time.Millisecond)
 	}
-	log.Printf("Minimum trigger %d\n", minimumTrigger)
+	log.Printf("Minimum trigger set to %d!\n", minimumTrigger)
+	time.Sleep(500 * time.Millisecond)
 
 	getNewDump := true
 	if _, err := os.Stat("regions.xml"); err == nil {
@@ -186,6 +187,11 @@ func main() {
 		}
 		time.Sleep(1500 * time.Millisecond) //courtesy sleep even though we have ratelimiting
 	}
+	if len(hittable) == 0 {
+		log.Print("No regions are hittable! Press enter to exit...")
+		scanner.Scan()
+	}
+
 	log.Printf("Checks done! %d regions are hittable!\n", len(hittable))
 
 	//sort hittable targets by update time
@@ -238,6 +244,11 @@ func main() {
 
 		if _, exists := updateTimes[regionUpdate]; !exists {
 			updateTimes[regionUpdate] = canonName
+		}
+
+		//edge case where region doesn't exit in daily dump
+		if hitIndex != len(hittable)-1 && canonName == hittable[hitIndex+1].Name {
+			hitIndex++
 		}
 
 		if canonName == hittable[hitIndex].Name {
@@ -298,5 +309,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println("Files created! Exiting...")
+	log.Print("Files created! Press enter to exit...")
+	scanner.Scan()
 }
