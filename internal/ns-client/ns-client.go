@@ -35,7 +35,7 @@ import (
 )
 
 const apiUrl = "https://www.nationstates.net/cgi-bin/api.cgi"
-const version = "1.0.4"
+const version = "1.0.5"
 
 var httpClient = http.DefaultClient
 var userAgent = ""
@@ -135,7 +135,7 @@ func GetProposalApprovals(id string) (delegates []string, error error) {
 	return nil, errors.New("proposal not found")
 }
 
-func GetRegioninfo(region string) (regionInfo RegionInfo, error error) {
+func GetRegionInfo(region string) (regionInfo RegionInfo, error error) {
 	var zero RegionInfo
 
 	data := url.Values{}

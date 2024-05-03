@@ -33,7 +33,7 @@ import (
 	"time"
 )
 
-const Gpl = `QUORATE v1.0.4, Copyright (C) 2024 Nota
+const Gpl = `QUORATE v1.0.5, Copyright (C) 2024 Nota
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it
 under certain conditions. Check the LICENSE file for more info.
@@ -185,7 +185,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		regionInfo, err := nsclient.GetRegioninfo(region)
+		regionInfo, err := nsclient.GetRegionInfo(region)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -273,7 +273,7 @@ func main() {
 			updateTimes[regionUpdate] = canonName
 		}
 
-		//edge case where region doesn't exit in daily dump
+		//edge case where region doesn't exist in daily dump
 		if hitIndex != len(hittable)-1 && canonName == hittable[hitIndex+1].Name {
 			hitIndex++
 		}
@@ -299,6 +299,10 @@ func main() {
 	log.Println("Triggers obtained!")
 
 	log.Println("Creating trigger_list.txt and raidFile.txt...")
+	updateStartTime := time.Unix(firstUpdateTime, 0)
+	for updateStartTime.Second() != 0 {
+		updateStartTime = updateStartTime.Add(-1 * time.Second)
+	}
 	var triggerFileBuilder strings.Builder
 	var raidFileBuilder strings.Builder
 
@@ -307,12 +311,12 @@ func main() {
 			continue
 		}
 
-		firstRegionTimeDiff := (time.Duration(hit.UpdateTime-firstUpdateTime) * time.Second).String()
+		updateStartTimeDiff := (time.Duration(hit.UpdateTime-firstUpdateTime) * time.Second).String()
 		triggerTimeDiff := time.Duration(hit.UpdateTime-hit.TriggerTime) * time.Second
 
 		triggerFileBuilder.WriteString(hit.TriggerRegion + "\n")
 		raidFileBuilder.WriteString(fmt.Sprintf("%d) https://www.nationstates.net/region=%s (%s)\n", i+1, hit.Name,
-			firstRegionTimeDiff))
+			updateStartTimeDiff))
 		if hit.IsDeltip {
 			raidFileBuilder.WriteString(fmt.Sprintf("ENDORSE: https://www.nationstates.net/nation=%s\n", hit.SecondNation))
 		}
